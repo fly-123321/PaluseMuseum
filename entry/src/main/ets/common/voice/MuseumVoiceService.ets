@@ -1,19 +1,154 @@
 import promptAction from '@ohos.promptAction';
 import router from '@ohos.router';
+import { textToSpeech } from '@kit.CoreSpeechKit';
+import { BusinessError } from '@kit.BasicServicesKit';
 import { Artifact, mockArtifacts } from '../models/Artifact';
 
 export class MuseumVoiceService {
+  private static ttsEngine: textToSpeech.TextToSpeechEngine | null = null;
+  private static creatingEngine: Promise<textToSpeech.TextToSpeechEngine> | null = null;
+
   /**
-   * 语音播报入口
-   * 目前先用 Toast + console 模拟语音播报
-   * 后面接真实 TTS 的时候，只需要改这个函数
+   * 创建 / 获取 TTS 引擎
    */
-  static speak(text: string): void {
-    promptAction.showToast({
-      message: '语音播报：' + text.substring(0, 20)
+  private static async getTtsEngine(): Promise<textToSpeech.TextToSpeechEngine> {
+    if (!canIUse('SystemCapability.AI.TextToSpeech')) {
+      promptAction.showToast({
+        message: '当前设备不支持语音播报'
+      });
+      throw new Error('当前设备不支持 SystemCapability.AI.TextToSpeech');
+    }
+
+    if (MuseumVoiceService.ttsEngine !== null) {
+      return MuseumVoiceService.ttsEngine;
+    }
+
+    if (MuseumVoiceService.creatingEngine !== null) {
+      return MuseumVoiceService.creatingEngine;
+    }
+
+    MuseumVoiceService.creatingEngine = new Promise((resolve, reject) => {
+      let initParams: textToSpeech.CreateEngineParams = {
+        language: 'zh-CN',
+        person: 0,
+        online: 1,
+        extraParams: {
+          'style': 'interaction-broadcast',
+          'locate': 'CN',
+          'name': 'MuseumTtsEngine'
+        }
+      };
+
+      textToSpeech.createEngine(initParams, (err: BusinessError, engine: textToSpeech.TextToSpeechEngine) => {
+        MuseumVoiceService.creatingEngine = null;
+
+        if (err) {
+          console.error('[MuseumVoiceService] 创建TTS引擎失败：' + JSON.stringify(err));
+          reject(err);
+          return;
+        }
+
+        MuseumVoiceService.ttsEngine = engine;
+
+        let speakListener: textToSpeech.SpeakListener = {
+          onStart(requestId: string, response: textToSpeech.StartResponse) {
+            console.info('[MuseumVoiceService] 开始播报：' + requestId + ', ' + JSON.stringify(response));
+          },
+
+          onComplete(requestId: string, response: textToSpeech.CompleteResponse) {
+            console.info('[MuseumVoiceService] 播报完成：' + requestId + ', ' + JSON.stringify(response));
+          },
+
+          onStop(requestId: string, response: textToSpeech.StopResponse) {
+            console.info('[MuseumVoiceService] 停止播报：' + requestId + ', ' + JSON.stringify(response));
+          },
+
+          onData(requestId: string, audio: ArrayBuffer, response: textToSpeech.SynthesisResponse) {
+            console.info('[MuseumVoiceService] 收到音频流：' + requestId + ', ' + JSON.stringify(response));
+          },
+
+          onError(requestId: string, errorCode: number, errorMessage: string) {
+            console.error('[MuseumVoiceService] 播报错误：' + requestId + ', ' + errorCode + ', ' + errorMessage);
+          }
+        };
+
+        engine.setListener(speakListener);
+        resolve(engine);
+      });
     });
 
-    console.info('[MuseumVoiceService] speak: ' + text);
+    return MuseumVoiceService.creatingEngine;
+  }
+
+  /**
+   * 真正的语音播报入口
+   */
+  static async speak(text: string): Promise<void> {
+    if (!text || text.trim().length === 0) {
+      promptAction.showToast({
+        message: '没有可播报的内容'
+      });
+      return;
+    }
+
+    try {
+      let engine = await MuseumVoiceService.getTtsEngine();
+
+      // 如果正在播报，先停掉上一段，避免叠音
+      try {
+        if (engine.isBusy()) {
+          engine.stop();
+        }
+      } catch (error) {
+        console.info('[MuseumVoiceService] 停止上一段播报失败，可忽略：' + JSON.stringify(error));
+      }
+
+      let finalText = text;
+      if (finalText.length > 10000) {
+        finalText = finalText.substring(0, 10000);
+      }
+
+      let speakParams: textToSpeech.SpeakParams = {
+        requestId: 'museum-' + Date.now().toString(),
+        extraParams: {
+          'queueMode': 0,
+          'speed': 1,
+          'volume': 2,
+          'pitch': 1,
+          'languageContext': 'zh-CN',
+          'audioType': 'pcm',
+          'soundChannel': 3,
+          'playType': 1
+        }
+      };
+
+      engine.speak(finalText, speakParams);
+
+      promptAction.showToast({
+        message: '正在播放语音讲解'
+      });
+    } catch (error) {
+      let err = error as BusinessError;
+      console.error('[MuseumVoiceService] 语音播放失败：' + JSON.stringify(error));
+
+      promptAction.showToast({
+        message: '语音播放失败：' + (err.message || '请检查真机环境')
+      });
+    }
+  }
+
+  /**
+   * 停止播放
+   */
+  static stop(): void {
+    try {
+      MuseumVoiceService.ttsEngine?.stop();
+      promptAction.showToast({
+        message: '已停止语音播放'
+      });
+    } catch (error) {
+      console.error('[MuseumVoiceService] 停止播放失败：' + JSON.stringify(error));
+    }
   }
 
   /**
@@ -32,7 +167,6 @@ ${artifact.description}`;
    */
   static searchArtifactByText(text: string): Artifact | null {
     let keyword = text.trim();
-
     if (keyword.length === 0) {
       return null;
     }
