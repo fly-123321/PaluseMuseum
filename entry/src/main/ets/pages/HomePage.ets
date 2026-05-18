@@ -28,7 +28,7 @@ export struct HomePage {
   @State museums: string[] = [];
 
   @State currentPage: number = 1;
-  private pageSize: number = 3;
+  private pageSize: number = 10;
   @State totalFilteredList: Artifact[] = [];
   @State hasMore: boolean = false;
 
@@ -68,6 +68,38 @@ export struct HomePage {
     return ['全部', ...Array.from(set)];
   }
 
+  // 朝代排序映射（数字越小年代越早）
+  private periodOrder(period: string): number {
+    // 新石器时代
+    if (period === '良渚文化' || period === '新石器时代' || period === '仰韶文化') return 1;
+    if (period === '夏') return 2;
+    if (period === '商') return 3;
+    if (period === '西周') return 4;
+    if (period === '春秋') return 5;
+    if (period === '战国') return 6;
+    if (period === '秦') return 7;
+    if (period === '西汉') return 8;
+    if (period === '东汉') return 9;
+    if (period === '三国') return 10;
+    if (period === '西晋') return 11;
+    if (period === '东晋') return 12;
+    if (period === '南北朝') return 13;
+    if (period === '隋') return 14;
+    if (period === '唐') return 15;
+    if (period === '五代十国') return 16;
+    if (period === '北宋') return 17;
+    if (period === '南宋') return 18;
+    if (period === '辽') return 19;
+    if (period === '金') return 20;
+    if (period === '元') return 21;
+    // 明朝：统一处理 '明' 或 '明·永乐' 等细分
+    if (period.startsWith('明')) return 22;
+    if (period === '清') return 23;
+    if (period === '民国') return 24;
+    // 未知朝代排最后
+    return 99;
+  }
+
   private refreshList() {
     let list = [...this.allArtifacts];
 
@@ -88,11 +120,19 @@ export struct HomePage {
     if (this.filterMuseum !== '全部') list = list.filter(item => item.museum === this.filterMuseum);
 
     if (this.sortBy === 'hot') {
-      list.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-    } else if (this.sortBy === 'name') {
-      list.sort((a, b) => a.title.localeCompare(b.title));
+      list.sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0));
+    }else if (this.sortBy === 'name') {
+      list.sort((a, b) => {
+        try {
+          // 尝试使用中文拼音排序
+          return a.title.localeCompare(b.title, 'zh-CN');
+        } catch (e) {
+          // 如果设备不支持，回退到默认排序
+          return a.title.localeCompare(b.title);
+        }
+      });
     } else if (this.sortBy === 'period') {
-      list.sort((a, b) => a.period.localeCompare(b.period));
+      list.sort((a, b) => this.periodOrder(a.period) - this.periodOrder(b.period));
     }
 
     this.totalFilteredList = list;
@@ -131,9 +171,12 @@ export struct HomePage {
 
       // 搜索框
       Row() {
-        TextInput({ placeholder: '🔍  搜索文物名称、年代、类型、材质' })
+        TextInput({ placeholder: '🔍  搜索文物名称、年代、类型、材质...' })
           .onChange((value: string) => {
             this.searchKeyword = value;
+            if (value.trim()) {
+              this.showMoreFilters = true;  // 有搜索词时自动展开筛选
+            }
             this.refreshList();
           })
           .layoutWeight(1)
