@@ -15,6 +15,14 @@
     {
       "name": "read_image_reason",
       "value": "用于从相册选择参观照片并上传到本地收藏"
+    },
+    {
+      "name": "camera_permission_reason",
+      "value": "需要相机权限以进行拍照搜索"
+    },
+    {
+      "name": "read_media_permission_reason",
+      "value": "需要相册权限以选择图片搜索"
     }
   ]
 }

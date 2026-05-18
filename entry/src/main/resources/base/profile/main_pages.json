@@ -11,6 +11,7 @@
     "pages/MyCommentsPage",
     "pages/MyHistoryPage",
     "pages/MyUploadsPage",
-    "pages/PrivacySettingPage"
+    "pages/PrivacySettingPage",
+    "pages/ImageSearchResultPage"
   ]
 }
