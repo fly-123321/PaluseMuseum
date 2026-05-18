@@ -1,4 +1,4 @@
-
+// ArtifactDetailPage.ets
 import router from '@ohos.router';
 import { Artifact, mockArtifacts } from '../common/models/Artifact';
 import promptAction from '@ohos.promptAction';
@@ -37,19 +37,24 @@ export struct ArtifactDetailPage {
   @State relatedEntities: RelatedEntity[] = [];
   @State relatedList: Artifact[] = [];
   @State currentImageIndex: number = 0;
+  @State allImageUrls: string[] = []; // 多图地址列表
 
   aboutToAppear() {
     const params = router.getParams() as Record<string, string>;
-    // 兼容两种参数名
     const id = params ? (params['objectId'] || params['id']) : undefined;
     if (id) {
       this.artifactId = id;
       const found = mockArtifacts.find(item => item.id === this.artifactId);
       this.artifact = found || null;
       if (this.artifact) {
-        // 同时执行两边的初始化逻辑
-        this.loadRelatedData();        // 关联推荐
-        this.initInteractionData();    // 交互数据
+        // 初始化多图列表
+        if (this.artifact.imageUrls && this.artifact.imageUrls.length > 0) {
+          this.allImageUrls = this.artifact.imageUrls;
+        } else {
+          this.allImageUrls = [this.artifact.imageUrl];
+        }
+        this.loadRelatedData();
+        this.initInteractionData();
       }
     }
   }
@@ -101,35 +106,48 @@ export struct ArtifactDetailPage {
       if (this.artifact) {
         Scroll() {
           Column() {
-            // ===== 图片区域（手势缩放功能） =====
+            // ===== 图片区域（多图轮播 + 手势缩放） =====
             Stack() {
-              Image(this.artifact.imageUrl)
-                .width('100%')
-                .height(400)
-                .objectFit(ImageFit.Cover)
-                .backgroundColor('#CCCCCC')
-                .alt($r('app.media.startIcon'))
-                .scale({ x: this.scaleValue, y: this.scaleValue })
-                .offset({ x: this.offsetX, y: this.offsetY })
-                .gesture(
-                  GestureGroup(GestureMode.Parallel,
-                    PinchGesture()
-                      .onActionUpdate((event: GestureEvent) => {
-                        this.scaleValue = event.scale;
-                      })
-                      .onActionEnd(() => {
-                        if (this.scaleValue < 0.5) this.scaleValue = 0.5;
-                        if (this.scaleValue > 3) this.scaleValue = 3;
-                      }),
-                    PanGesture({ fingers: 2 })
-                      .onActionUpdate((event: GestureEvent) => {
-                        this.offsetX = event.offsetX;
-                        this.offsetY = event.offsetY;
-                      })
-                  )
-                )
+              Swiper() {
+                ForEach(this.allImageUrls, (url: string, index: number) => {
+                  Image(url)
+                    .width('100%')
+                    .height(400)
+                    .objectFit(ImageFit.Cover)
+                    .backgroundColor('#CCCCCC')
+                    .alt($r('app.media.startIcon'))
+                    .scale({ x: this.scaleValue, y: this.scaleValue })
+                    .offset({ x: this.offsetX, y: this.offsetY })
+                    .gesture(
+                      GestureGroup(GestureMode.Parallel,
+                        PinchGesture()
+                          .onActionUpdate((event: GestureEvent) => {
+                            this.scaleValue = event.scale;
+                          })
+                          .onActionEnd(() => {
+                            if (this.scaleValue < 0.5) this.scaleValue = 0.5;
+                            if (this.scaleValue > 3) this.scaleValue = 3;
+                          }),
+                        PanGesture({ fingers: 2 })
+                          .onActionUpdate((event: GestureEvent) => {
+                            this.offsetX = event.offsetX;
+                            this.offsetY = event.offsetY;
+                          })
+                      )
+                    )
+                }, (url: string, index: number) => index.toString())
+              }
+              .index(this.currentImageIndex)
+              .autoPlay(false)
+              .indicator(false)
+              .onChange((index: number) => {
+                this.currentImageIndex = index;
+              })
+              .width('100%')
+              .height(400)
 
-              Text(`${this.currentImageIndex + 1}/1`)
+              // 自定义图片计数指示器
+              Text(`${this.currentImageIndex + 1}/${this.allImageUrls.length}`)
                 .fontSize(12)
                 .fontColor('#FFFFFF')
                 .backgroundColor('#80000000')
@@ -256,7 +274,7 @@ export struct ArtifactDetailPage {
                 .margin({ bottom: 20 })
               }
 
-              // ===== 交互按钮（语音、点赞、收藏、上传照片） =====
+              // ===== 交互按钮 =====
               Column({ space: 12 }) {
                 Row({ space: 12 }) {
                   Button('🎧 语音讲解', { type: ButtonType.Capsule })
@@ -458,9 +476,7 @@ export struct ArtifactDetailPage {
   }
 
   private async handleToggleLike() {
-    if (!this.artifact) {
-      return;
-    }
+    if (!this.artifact) return;
     if (!this.isLogin || !this.username) {
       this.showToast('请先登录后再点赞');
       router.pushUrl({ url: 'pages/LoginPage' });
@@ -472,9 +488,7 @@ export struct ArtifactDetailPage {
   }
 
   private async handleToggleFavorite() {
-    if (!this.artifact) {
-      return;
-    }
+    if (!this.artifact) return;
     if (!this.isLogin || !this.username) {
       this.showToast('请先登录后再收藏');
       router.pushUrl({ url: 'pages/LoginPage' });
@@ -486,17 +500,13 @@ export struct ArtifactDetailPage {
   }
 
   private async handleSubmitComment() {
-    if (!this.artifact) {
-      return;
-    }
+    if (!this.artifact) return;
     if (!this.isLogin || !this.username) {
       this.showToast('请先登录后再评论');
       router.pushUrl({ url: 'pages/LoginPage' });
       return;
     }
-    if (this.isSubmittingComment) {
-      return;
-    }
+    if (this.isSubmittingComment) return;
     this.isSubmittingComment = true;
     const result = await interactionStore.addComment(this.artifact, this.username, this.commentInput);
     this.isSubmittingComment = false;
@@ -508,23 +518,17 @@ export struct ArtifactDetailPage {
   }
 
   private async handleUploadPhoto() {
-    if (!this.artifact) {
-      return;
-    }
+    if (!this.artifact) return;
     if (!this.isLogin || !this.username) {
       this.showToast('请先登录后再上传照片');
       router.pushUrl({ url: 'pages/LoginPage' });
       return;
     }
-    if (this.isUploadingPhoto) {
-      return;
-    }
+    if (this.isUploadingPhoto) return;
     this.isUploadingPhoto = true;
     const imageUri = await pickSingleImageUri();
     this.isUploadingPhoto = false;
-    if (!imageUri) {
-      return;
-    }
+    if (!imageUri) return;
     await interactionStore.addUpload({
       artifactId: this.artifact.id,
       artifactTitle: this.artifact.title,
