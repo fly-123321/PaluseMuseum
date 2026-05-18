@@ -1,12 +1,26 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\25578\\.ohos\\config\\default_PalmMuseum_o9ySIc_YEon-TxfbwfC9pU3108lqATLXjYvuaNs6mc0=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B006E3E9AB56F75D7152FB5AA47D81DC96EE69D13CBAE242AC1FA7E7DEB4956C1B5642BBE96C992",
+          "profile": "C:\\Users\\25578\\.ohos\\config\\default_PalmMuseum_o9ySIc_YEon-TxfbwfC9pU3108lqATLXjYvuaNs6mc0=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\25578\\.ohos\\config\\default_PalmMuseum_o9ySIc_YEon-TxfbwfC9pU3108lqATLXjYvuaNs6mc0=.p12",
+          "storePassword": "0000001B282CF0D6EBF021B0D51F5BAEA16A759C5402A00C7EF318EEF10A3D42B58B7D1CC79222009DAA9E"
+        }
+      }
+    ],
     "products": [
       {
         "name": "default",
         "signingConfig": "default",
-        "targetSdkVersion": "6.1.0(23)",
-        "compatibleSdkVersion": "6.1.0(23)",
+        "targetSdkVersion": "5.0.5(17)",
+        "compatibleSdkVersion": "5.0.3(15)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {
