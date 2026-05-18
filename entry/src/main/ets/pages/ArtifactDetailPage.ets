@@ -1,4 +1,4 @@
-// ArtifactDetailPage.ets（冲突完全解决版）
+
 import router from '@ohos.router';
 import { Artifact, mockArtifacts } from '../common/models/Artifact';
 import promptAction from '@ohos.promptAction';
@@ -8,7 +8,7 @@ import { interactionStore } from '../common/store/InteractionStore';
 import { formatDateTime, formatReviewColor, formatReviewStatus } from '../common/utils/InteractionFormatUtil';
 import { pickSingleImageUri } from '../common/utils/PhotoPickerUtil';
 
-// 关联实体接口（你的功能）
+// 关联实体接口
 interface RelatedEntity {
   title: string;
   id: string;
@@ -28,19 +28,19 @@ export struct ArtifactDetailPage {
   @State isUploadingPhoto: boolean = false;
   private artifactId: string = '';
 
-  // 你的功能：手势缩放
+  // 手势缩放
   @State scaleValue: number = 1;
   @State offsetX: number = 0;
   @State offsetY: number = 0;
 
-  // 你的功能：关联实体与推荐
+  // 关联实体与推荐
   @State relatedEntities: RelatedEntity[] = [];
   @State relatedList: Artifact[] = [];
   @State currentImageIndex: number = 0;
 
   aboutToAppear() {
     const params = router.getParams() as Record<string, string>;
-    // 兼容两种参数名：你的 objectId 和 main 的 id
+    // 兼容两种参数名
     const id = params ? (params['objectId'] || params['id']) : undefined;
     if (id) {
       this.artifactId = id;
@@ -48,13 +48,13 @@ export struct ArtifactDetailPage {
       this.artifact = found || null;
       if (this.artifact) {
         // 同时执行两边的初始化逻辑
-        this.loadRelatedData();        // 你的：关联推荐
-        this.initInteractionData();    // main：交互数据
+        this.loadRelatedData();        // 关联推荐
+        this.initInteractionData();    // 交互数据
       }
     }
   }
 
-  // ===== 你的功能：加载关联数据 =====
+  // ===== 加载关联数据 =====
   private loadRelatedData() {
     if (!this.artifact) return;
 
@@ -68,7 +68,7 @@ export struct ArtifactDetailPage {
       .slice(0, 4);
   }
 
-  // ===== main 分支功能：交互数据初始化 =====
+  // ===== 交互数据初始化 =====
   private resolveActor(): string {
     if (this.isLogin && this.username) {
       return this.username;
@@ -101,7 +101,7 @@ export struct ArtifactDetailPage {
       if (this.artifact) {
         Scroll() {
           Column() {
-            // ===== 图片区域（你的手势缩放功能） =====
+            // ===== 图片区域（手势缩放功能） =====
             Stack() {
               Image(this.artifact.imageUrl)
                 .width('100%')
@@ -174,7 +174,7 @@ export struct ArtifactDetailPage {
                 .textAlign(TextAlign.Start)
                 .margin({ bottom: 20 })
 
-              // ===== 你的功能：同朝代关联实体 =====
+              // ===== 同朝代关联实体 =====
               if (this.relatedEntities.length > 0) {
                 Column() {
                   Text('同朝代文物')
@@ -206,7 +206,7 @@ export struct ArtifactDetailPage {
                 .margin({ bottom: 20 })
               }
 
-              // ===== 你的功能：相关推荐 =====
+              // ===== 相关推荐 =====
               if (this.relatedList.length > 0) {
                 Column() {
                   Text('相关推荐')
@@ -256,7 +256,7 @@ export struct ArtifactDetailPage {
                 .margin({ bottom: 20 })
               }
 
-              // ===== main 分支功能：交互按钮（语音、点赞、收藏、上传照片） =====
+              // ===== 交互按钮（语音、点赞、收藏、上传照片） =====
               Column({ space: 12 }) {
                 Row({ space: 12 }) {
                   Button('🎧 语音讲解', { type: ButtonType.Capsule })

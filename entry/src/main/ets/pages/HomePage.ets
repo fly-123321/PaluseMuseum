@@ -1,4 +1,3 @@
-// HomePage.ets（折叠筛选栏：默认只显示“年代”，展开后四行）
 import { Artifact, mockArtifacts } from '../common/models/Artifact';
 import router from '@ohos.router';
 
