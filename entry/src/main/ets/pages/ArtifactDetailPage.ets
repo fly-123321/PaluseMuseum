@@ -1,4 +1,4 @@
-// ArtifactDetailPage.ets
+// ArtifactDetailPage.ets（敦煌色系风格统一）
 import router from '@ohos.router';
 import { Artifact, mockArtifacts } from '../common/models/Artifact';
 import promptAction from '@ohos.promptAction';
@@ -104,6 +104,30 @@ export struct ArtifactDetailPage {
   build() {
     Column() {
       if (this.artifact) {
+        // ===== 敦煌风格导航栏 =====
+        Row() {
+          Text('←')
+            .fontSize(28)
+            .fontColor('#3A3A3A')
+            .padding({ left: 4, right: 8 })
+            .onClick(() => {
+              router.back();
+            })
+          Text(this.artifact.title)
+            .fontSize(26)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#3A3A3A')
+            .fontFamily('myCustomFont')   // 个人字体
+            .layoutWeight(1)
+            .textAlign(TextAlign.Center)
+          // 右侧占位保持标题居中
+          Row().width(36).height(36)
+        }
+        .width('100%')
+        .height(48)
+        .padding({ left: 12, right: 12 })
+        .backgroundColor('#F5F0E8')
+
         Scroll() {
           Column() {
             // ===== 图片区域（多图轮播 + 手势缩放） =====
@@ -114,7 +138,7 @@ export struct ArtifactDetailPage {
                     .width('100%')
                     .height(400)
                     .objectFit(ImageFit.Cover)
-                    .backgroundColor('#CCCCCC')
+                    .backgroundColor('#FFFFFF')
                     .alt($r('app.media.startIcon'))
                     .scale({ x: this.scaleValue, y: this.scaleValue })
                     .offset({ x: this.offsetX, y: this.offsetY })
@@ -157,13 +181,15 @@ export struct ArtifactDetailPage {
             }
             .width('100%')
             .height(400)
-            .backgroundColor('#FAFAFA')
+            .backgroundColor('#FFFFFF')
 
-            // 基本信息
+            // ===== 详细信息卡片（暖白底 + 白色内容卡片） =====
             Column() {
+              // 基本信息
               Text(this.artifact.title)
                 .fontSize(24)
                 .fontWeight(FontWeight.Bold)
+                .fontColor('#3A3A3A')
                 .margin({ bottom: 12 })
 
               Row() {
@@ -177,20 +203,35 @@ export struct ArtifactDetailPage {
 
               Text('收藏机构：' + this.artifact.museum)
                 .fontSize(16)
-                .fontColor('#666666')
+                .fontColor('#8B7355')
                 .margin({ bottom: 24 })
 
               Text('文物介绍')
                 .fontSize(18)
                 .fontWeight(FontWeight.Bold)
+                .fontColor('#3A3A3A')
                 .alignSelf(ItemAlign.Start)
                 .margin({ bottom: 8 })
 
-              Text(this.artifact.description)
-                .fontSize(16)
-                .lineHeight(24)
-                .textAlign(TextAlign.Start)
-                .margin({ bottom: 20 })
+              // 文物描述独立白色卡片
+              Column() {
+                Text(this.artifact.description)
+                  .fontSize(16)
+                  .lineHeight(24)
+                  .fontColor('#3A3A3A')
+                  .textAlign(TextAlign.Start)
+              }
+              .backgroundColor('#FFFFFF')
+              .borderRadius(8)
+              .padding(12)
+              .width('100%')
+              .margin({ bottom: 20 })
+
+              // 分割线（可选，增强层次）
+              Divider()
+                .strokeWidth(0.5)
+                .color('#E0D5C6')
+                .margin({ top: 0, bottom: 20 })
 
               // ===== 同朝代关联实体 =====
               if (this.relatedEntities.length > 0) {
@@ -198,6 +239,7 @@ export struct ArtifactDetailPage {
                   Text('同朝代文物')
                     .fontSize(16)
                     .fontWeight(FontWeight.Bold)
+                    .fontColor('#3A3A3A')
                     .alignSelf(ItemAlign.Start)
                     .margin({ bottom: 8 })
 
@@ -205,8 +247,8 @@ export struct ArtifactDetailPage {
                     ForEach(this.relatedEntities, (entity: RelatedEntity) => {
                       Text(entity.title)
                         .fontSize(13)
-                        .fontColor('#1A73E8')
-                        .backgroundColor('#E8F0FE')
+                        .fontColor('#C05040')
+                        .backgroundColor('#F5E8E2')
                         .borderRadius(12)
                         .padding({ left: 10, right: 10, top: 4, bottom: 4 })
                         .margin({ right: 8, bottom: 6 })
@@ -230,6 +272,7 @@ export struct ArtifactDetailPage {
                   Text('相关推荐')
                     .fontSize(18)
                     .fontWeight(FontWeight.Bold)
+                    .fontColor('#3A3A3A')
                     .alignSelf(ItemAlign.Start)
                     .margin({ bottom: 8 })
 
@@ -246,6 +289,7 @@ export struct ArtifactDetailPage {
 
                           Text(item.title)
                             .fontSize(12)
+                            .fontColor('#3A3A3A')
                             .maxLines(1)
                             .textOverflow({ overflow: TextOverflow.Ellipsis })
                             .width(120)
@@ -253,8 +297,12 @@ export struct ArtifactDetailPage {
 
                           Text(item.period)
                             .fontSize(11)
-                            .fontColor('#888')
+                            .fontColor('#8B7355')
                         }
+                        .padding(8)
+                        .backgroundColor('#FFFFFF')
+                        .borderRadius(8)
+                        .shadow({ radius: 6, color: '#18000000', offsetY: 2 })
                         .margin({ right: 8 })
                         .onClick(() => {
                           router.replaceUrl({
@@ -274,15 +322,17 @@ export struct ArtifactDetailPage {
                 .margin({ bottom: 20 })
               }
 
-              // ===== 交互按钮 =====
+              // ===== 交互按钮（描边风格） =====
               Column({ space: 12 }) {
                 Row({ space: 12 }) {
                   Button('🎧 语音讲解', { type: ButtonType.Capsule })
                     .layoutWeight(1)
                     .height(44)
                     .fontSize(15)
-                    .backgroundColor('#1677FF')
-                    .fontColor(Color.White)
+                    .backgroundColor('#FFFFFF')
+                    .fontColor('#C05040')
+                    .border({ width: 1, color: '#C05040' })
+                    .borderRadius(20)
                     .onClick(() => {
                       if (this.artifact !== null) {
                         try {
@@ -299,8 +349,10 @@ export struct ArtifactDetailPage {
                     .layoutWeight(1)
                     .height(44)
                     .fontSize(15)
-                    .backgroundColor('#8E44AD')
-                    .fontColor(Color.White)
+                    .backgroundColor('#FFFFFF')
+                    .fontColor('#C05040')
+                    .border({ width: 1, color: '#C05040' })
+                    .borderRadius(20)
                     .onClick(() => {
                       if (this.artifact !== null) {
                         try {
@@ -322,8 +374,10 @@ export struct ArtifactDetailPage {
                     .layoutWeight(1)
                     .height(44)
                     .fontSize(15)
-                    .backgroundColor(this.likeSummary.active ? '#FF4D4F' : '#FF7A00')
-                    .fontColor(Color.White)
+                    .backgroundColor(this.likeSummary.active ? '#C05040' : '#FFFFFF')
+                    .fontColor(this.likeSummary.active ? '#FFFFFF' : '#C05040')
+                    .border({ width: this.likeSummary.active ? 0 : 1, color: '#C05040' })
+                    .borderRadius(20)
                     .onClick(() => {
                       this.handleToggleLike();
                     })
@@ -333,8 +387,10 @@ export struct ArtifactDetailPage {
                     .layoutWeight(1)
                     .height(44)
                     .fontSize(15)
-                    .backgroundColor(this.favoriteSummary.active ? '#0E7A3E' : '#18A058')
-                    .fontColor(Color.White)
+                    .backgroundColor(this.favoriteSummary.active ? '#8B7355' : '#FFFFFF')
+                    .fontColor(this.favoriteSummary.active ? '#FFFFFF' : '#C05040')
+                    .border({ width: this.favoriteSummary.active ? 0 : 1, color: '#C05040' })
+                    .borderRadius(20)
                     .onClick(() => {
                       this.handleToggleFavorite();
                     })
@@ -345,8 +401,10 @@ export struct ArtifactDetailPage {
                   .width('100%')
                   .height(44)
                   .fontSize(15)
-                  .backgroundColor('#5B6CFF')
-                  .fontColor(Color.White)
+                  .backgroundColor('#FFFFFF')
+                  .fontColor('#C05040')
+                  .border({ width: 1, color: '#C05040' })
+                  .borderRadius(20)
                   .enabled(!this.isUploadingPhoto)
                   .onClick(() => {
                     this.handleUploadPhoto();
@@ -358,28 +416,38 @@ export struct ArtifactDetailPage {
               this.CommentSection()
             }
             .padding(16)
+            .backgroundColor('#FAF7F2')
+            .borderRadius(8)
+            .shadow({ radius: 6, color: '#18000000', offsetY: 2 })
+            .margin({ left: 12, right: 12, top: 12, bottom: 12 })
             .alignItems(HorizontalAlign.Center)
           }
         }
         .scrollBar(BarState.Auto)
+        .backgroundColor('#F5F0E8')
       } else {
         Column() {
           Text('未找到该文物')
             .fontSize(20)
-            .fontColor('#FF0000')
+            .fontColor('#C05040')
           Button('返回首页')
             .margin({ top: 20 })
+            .backgroundColor('#FFFFFF')
+            .fontColor('#C05040')
+            .border({ width: 1, color: '#C05040' })
+            .borderRadius(20)
             .onClick(() => router.back())
         }
         .width('100%')
         .height('100%')
         .justifyContent(FlexAlign.Center)
         .alignItems(HorizontalAlign.Center)
+        .backgroundColor('#F5F0E8')
       }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F5F5')
+    .backgroundColor('#F5F0E8')
   }
 
   @Builder
@@ -388,13 +456,14 @@ export struct ArtifactDetailPage {
       Text(`评论区（${this.comments.length}）`)
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
+        .fontColor('#3A3A3A')
         .alignSelf(ItemAlign.Start)
         .margin({ bottom: 12 })
 
       if (this.comments.length === 0) {
         Text('暂无评论，快来抢沙发')
           .fontSize(14)
-          .fontColor('#999999')
+          .fontColor('#8B7355')
           .alignSelf(ItemAlign.Start)
           .margin({ bottom: 12 })
       } else {
@@ -413,6 +482,7 @@ export struct ArtifactDetailPage {
           .height(44)
           .backgroundColor('#FFFFFF')
           .borderRadius(8)
+          .placeholderColor('#8B7355')
           .onChange((value: string) => {
             this.commentInput = value;
           })
@@ -420,8 +490,9 @@ export struct ArtifactDetailPage {
         Button('发表')
           .height(44)
           .fontSize(14)
-          .backgroundColor('#007AFF')
+          .backgroundColor('#C05040')
           .fontColor(Color.White)
+          .borderRadius(8)
           .enabled(!this.isSubmittingComment)
           .onClick(() => {
             this.handleSubmitComment();
@@ -441,6 +512,7 @@ export struct ArtifactDetailPage {
         Text(item.username)
           .fontSize(14)
           .fontWeight(FontWeight.Medium)
+          .fontColor('#3A3A3A')
         Blank()
         Text(formatReviewStatus(item.status))
           .fontSize(12)
@@ -451,27 +523,29 @@ export struct ArtifactDetailPage {
       Text(item.content)
         .fontSize(15)
         .lineHeight(22)
+        .fontColor('#3A3A3A')
         .margin({ top: 6 })
         .width('100%')
 
       Text(formatDateTime(item.createdAt))
         .fontSize(12)
-        .fontColor('#999999')
+        .fontColor('#8B7355')
         .margin({ top: 6 })
         .alignSelf(ItemAlign.End)
     }
     .width('100%')
     .padding(12)
-    .backgroundColor('#FFFFFF')
+    .backgroundColor('#F7F3EC')               // 统一浅米色
     .borderRadius(10)
+    .shadow({ radius: 4, color: '#15000000', offsetY: 2 })
     .alignItems(HorizontalAlign.Start)
   }
 
   @Builder
   InfoChip(label: string, value: string) {
     Column() {
-      Text(label).fontSize(12).fontColor('#999999')
-      Text(value).fontSize(16).fontWeight(FontWeight.Medium).margin({ top: 4 })
+      Text(label).fontSize(12).fontColor('#8B7355')
+      Text(value).fontSize(16).fontWeight(FontWeight.Medium).fontColor('#3A3A3A').margin({ top: 4 })
     }
   }
 
