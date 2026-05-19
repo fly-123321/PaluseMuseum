@@ -28,6 +28,9 @@ struct Index {
     .barPosition(BarPosition.End)
     .onChange((index: number) => {
       this.currentIndex = index;
+      if (index === 2) {
+        AppStorage.SetOrCreate('interactionVersion', Date.now());
+      }
     })
   }
 }

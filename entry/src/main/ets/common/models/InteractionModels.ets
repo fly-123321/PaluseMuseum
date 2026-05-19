@@ -13,6 +13,12 @@ export interface FavoriteItem {
   createdAt: string;
 }
 
+export interface FavoriteGroupSummary {
+  name: string;
+  count: number;
+  isDefault?: boolean;
+}
+
 export interface CommentItem {
   id: string;
   artifactId: string;
@@ -23,6 +29,9 @@ export interface CommentItem {
   status: ReviewStatus;
   parentId?: string;
   replyTo?: string;
+  likeCount?: number;
+  likedByCurrentUser?: boolean;
+  children?: CommentItem[];
 }
 
 export interface UploadedPhotoItem {
@@ -44,6 +53,10 @@ export interface HistoryItem {
   period: string;
   museum: string;
   viewedAt: string;
+}
+
+export interface CreatedAtItem {
+  createdAt: string;
 }
 
 export interface PrivacySettings {
@@ -80,4 +93,9 @@ export const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {
   showPhotos: true
 };
 
-export const FAVORITE_GROUPS: string[] = ['默认收藏夹', '细看展柜', '课堂资料'];
+export const FAVORITE_GROUPS: string[] = [
+  '默认收藏夹',
+  '课堂资料',
+  '细看展柜',
+  '参观打卡'
+];

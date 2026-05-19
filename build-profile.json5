@@ -13,14 +13,27 @@
           "storeFile": "C:\\Users\\25578\\.ohos\\config\\default_PalmMuseum_o9ySIc_YEon-TxfbwfC9pU3108lqATLXjYvuaNs6mc0=.p12",
           "storePassword": "0000001B282CF0D6EBF021B0D51F5BAEA16A759C5402A00C7EF318EEF10A3D42B58B7D1CC79222009DAA9E"
         }
+      },
+      {
+        "name": "localDebug",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\11617\\.ohos\\config\\localDebug_PalmMuseum_JuPQv-eFRCVLFdUXWa_5c38S9eDp-05wNurENoSC1dA=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001A7CF9D448D48CBE05708E1D5D2C0339311486D25F1980641603129C69925F6B496D50AFD4C772",
+          "profile": "C:\\Users\\11617\\.ohos\\config\\localDebug_PalmMuseum_JuPQv-eFRCVLFdUXWa_5c38S9eDp-05wNurENoSC1dA=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\11617\\.ohos\\config\\localDebug_PalmMuseum_JuPQv-eFRCVLFdUXWa_5c38S9eDp-05wNurENoSC1dA=.p12",
+          "storePassword": "0000001A6DC3D111B7220AE56CE8B833ED6156594CE9541FD8C2D7B16F13E45CB74DF88C57941614E1B6"
+        }
       }
     ],
     "products": [
       {
         "name": "default",
-        "signingConfig": "default",
-        "targetSdkVersion": "5.0.5(17)",
-        "compatibleSdkVersion": "5.0.3(15)",
+        "signingConfig": "localDebug",
+        "targetSdkVersion": "6.1.1(24)",
+        "compatibleSdkVersion": "6.1.1(24)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
           "strictMode": {
