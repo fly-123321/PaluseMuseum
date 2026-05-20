@@ -1,5 +1,5 @@
 import router from '@ohos.router';
-import { CommentItem } from '../common/models/InteractionModels';
+import { CommentItem, ReviewStatus } from '../common/models/InteractionModels';
 import { interactionStore } from '../common/store/InteractionStore';
 import { formatDateTime, formatReviewColor, formatReviewStatus } from '../common/utils/InteractionFormatUtil';
 
@@ -9,20 +9,52 @@ export struct MyCommentsPage {
   @StorageLink('username') username: string = '';
   @State comments: CommentItem[] = [];
   @State isLoading: boolean = true;
+  private reviewRefreshTimer: number = -1;
 
   aboutToAppear() {
+    this.clearReviewRefreshTimer();
     this.loadComments();
+  }
+
+  aboutToDisappear() {
+    this.clearReviewRefreshTimer();
   }
 
   async loadComments() {
     this.isLoading = true;
     this.comments = await interactionStore.getUserComments(this.username);
     this.isLoading = false;
+    if (this.comments.some((item: CommentItem) => item.status === ReviewStatus.Pending)) {
+      this.scheduleReviewRefresh();
+    } else {
+      this.clearReviewRefreshTimer();
+    }
+  }
+
+  private clearReviewRefreshTimer() {
+    if (this.reviewRefreshTimer > -1) {
+      clearTimeout(this.reviewRefreshTimer);
+      this.reviewRefreshTimer = -1;
+    }
+  }
+
+  private scheduleReviewRefresh() {
+    this.clearReviewRefreshTimer();
+    this.reviewRefreshTimer = setTimeout(() => {
+      this.reviewRefreshTimer = -1;
+      this.loadComments();
+    }, 1600);
   }
 
   build() {
     Column() {
       this.PageHeader('我的评论')
+
+      Text('待审核评论仅自己可见，通过后才会出现在公开评论区。')
+        .fontSize(13)
+        .fontColor('#666666')
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 12 })
 
       if (this.isLoading) {
         LoadingProgress().width(40).height(40).margin({ top: 80 })
@@ -93,17 +125,30 @@ export struct MyCommentsPage {
       }
       .width('100%')
 
+      if (item.replyTo) {
+        Text(`回复 ${item.replyTo}`)
+          .fontSize(12)
+          .fontColor('#5B6CFF')
+          .margin({ top: 8 })
+      }
+
       Text(item.content)
         .fontSize(15)
         .lineHeight(22)
         .margin({ top: 8 })
         .width('100%')
 
-      Text(formatDateTime(item.createdAt))
-        .fontSize(12)
-        .fontColor('#999999')
-        .margin({ top: 8 })
-        .alignSelf(ItemAlign.End)
+      Row() {
+        Text(`评论点赞 ${item.likeCount || 0}`)
+          .fontSize(12)
+          .fontColor('#666666')
+        Blank()
+        Text(formatDateTime(item.createdAt))
+          .fontSize(12)
+          .fontColor('#999999')
+      }
+      .width('100%')
+      .margin({ top: 10 })
 
       if (item.artifactId) {
         Text('查看文物 >')
